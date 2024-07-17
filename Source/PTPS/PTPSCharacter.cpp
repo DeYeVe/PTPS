@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "PTPSAnimInstance.h"
 #include "PTPSWeapon.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -74,7 +75,7 @@ APTPSCharacter::APTPSCharacter()
 	FollowCamera->SetRelativeLocation(DefaultCameraLocation);
 	bIsZooming = false;
 	bCanFire = true;
-	bIsRolling = false;
+	bCanAct = true;
 }
 
 void APTPSCharacter::BeginPlay()
@@ -116,12 +117,25 @@ void APTPSCharacter::BeginPlay()
 void APTPSCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	
+	//UE_LOG(LogTemp, Warning, TEXT("%f"), GetCharacterMovement()->GetMaxSpeed());	
 
 	// camera control with zooming
-	FVector ZoomLocation = bIsZooming ? ZoomedCameraLocation : DefaultCameraLocation;
-	float ZoomLength = bIsZooming ? ZoomedCameraBoomLength : DefaultCameraBoomLength;
+	FVector ZoomLocation = bIsZooming && bCanAct ? ZoomedCameraLocation : DefaultCameraLocation;
+	float ZoomLength = bIsZooming && bCanAct ? ZoomedCameraBoomLength : DefaultCameraBoomLength;
 	FollowCamera->SetRelativeLocation(FMath::VInterpTo(FollowCamera->GetRelativeLocation(), ZoomLocation, DeltaSeconds, 10.0f));
 	CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, ZoomLength, DeltaSeconds, 10.0f);
+
+	// speed
+	if (bIsZooming)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 100.f;
+	}
+	else
+	{
+		float MoveSpeed = bIsSprinting ? 800.f : 500.f;
+		GetCharacterMovement()->MaxWalkSpeed = FMath::FInterpTo(GetCharacterMovement()->MaxWalkSpeed, MoveSpeed, DeltaSeconds, 15.0f);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -144,6 +158,13 @@ void APTPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 		// Fire
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APTPSCharacter::Fire);
+
+		// ReloadAction
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APTPSCharacter::Reload);
+
+		// SprintAction
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &APTPSCharacter::SprintStart);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &APTPSCharacter::SprintEnd);
 
 		// Zoom
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Started, this, &APTPSCharacter::ZoomIn);
@@ -202,7 +223,7 @@ void APTPSCharacter::Look(const FInputActionValue& Value)
 
 void APTPSCharacter::Fire()
 {
-	if (bIsRolling)
+	if (!bCanAct)
 		return;
 	
 	if (!bCanFire)
@@ -216,7 +237,6 @@ void APTPSCharacter::Fire()
 	
 	bCanFire = false;
 	
-	// 웨폰 플레이어 연결하고 각 웨폰에서 몽타쥬 재생하게
 	if (CurrentWeapon->WeaponTypeTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Weapons.Rifle"))))
 	{
 		AnimInstance->PlayPlayerRifleFireMontage();
@@ -226,38 +246,86 @@ void APTPSCharacter::Fire()
 	{
 		AnimInstance->PlayPlayerPistolFireMontage();
 	}
+	//else if weapon3
 	
 	CurrentWeapon->Fire();
 	
 }
 
-void APTPSCharacter::Roll()
+void APTPSCharacter::Reload()
 {
-	if (bIsRolling)
+	if (!bCanAct)
 		return;
 	
-	bIsRolling = true;
+	if (!(CurrentWeapon->GetCanReload()))
+		return;
+	
+	bCanAct = false;
+	
+	if (CurrentWeapon->WeaponTypeTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Weapons.Rifle"))))
+	{
+		AnimInstance->PlayPlayerRifleReloadMontage();
+		UE_LOG(LogTemp, Warning, TEXT("Rifle Reload"));	
+	}
+	else if (CurrentWeapon->WeaponTypeTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Weapons.Pistol"))))
+	{
+		AnimInstance->PlayPlayerPistolReloadMontage();
+	}
+	//else if weapon3
+	
+	CurrentWeapon->Reload();
+}
+
+void APTPSCharacter::ReloadEnd()
+{
+	if (CurrentWeapon->WeaponTypeTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Weapons.Rifle"))))
+	{		
+		CurrentWeapon->ReloadEnd();
+	}
+	else if (CurrentWeapon->WeaponTypeTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Weapons.Pistol"))))
+	{
+		CurrentWeapon->ReloadEnd();
+	}
+	//else if weapon3
+
+	bCanAct = true;
+}
+
+void APTPSCharacter::SprintStart()
+{
+	bIsSprinting = true;
+}
+
+void APTPSCharacter::SprintEnd()
+{
+	bIsSprinting = false;
+}
+
+void APTPSCharacter::Roll()
+{
+	if (!bCanAct)
+		return;
+	
+	bCanAct = false;
 	GetCharacterMovement()->SetJumpAllowed(false);
-	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	AnimInstance->PlayPlayerRollMontage();
 }
 
 void APTPSCharacter::RollEnd()
 {
-	bIsRolling = false;
+	bCanAct = true;
 	GetCharacterMovement()->SetJumpAllowed(true);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 void APTPSCharacter::ZoomIn()
 {
-	if (bIsRolling)
+	if (!bCanAct)
 		return;
 	
 	bIsZooming = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
     bUseControllerRotationYaw = true;
-	GetCharacterMovement()->MaxWalkSpeed = 100.f;
 }
 
 void APTPSCharacter::ZoomOut()
@@ -265,12 +333,11 @@ void APTPSCharacter::ZoomOut()
 	bIsZooming = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
     bUseControllerRotationYaw = false;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 }
 
 void APTPSCharacter::SelectWeapon(int32 WeaponIndex)
 {
-	if (bIsRolling)
+	if (!bCanAct)
 		return;
 	
 	if (WeaponSlots.IsValidIndex(WeaponIndex) && WeaponSlots[WeaponIndex] != nullptr)
@@ -307,5 +374,10 @@ void APTPSCharacter::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	if (Montage == AnimInstance->PlayerRollMontage)
 	{
 		RollEnd();
+	}
+	else if (Montage == AnimInstance->PlayerPistolReloadMontage
+		|| Montage == AnimInstance->PlayerRifleReloadMontage )
+	{
+		ReloadEnd();
 	}
 }

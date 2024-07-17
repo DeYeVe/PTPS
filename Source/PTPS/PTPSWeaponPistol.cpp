@@ -3,6 +3,8 @@
 
 #include "PTPSWeaponPistol.h"
 
+#include "PTPSAnimInstance.h"
+
 APTPSWeaponPistol::APTPSWeaponPistol()
 {
 	MaxAmmo = 10;
@@ -18,9 +20,13 @@ void APTPSWeaponPistol::BeginPlay()
 void APTPSWeaponPistol::Fire()
 {
 	Super::Fire();
+
+	AnimInstance->PlayWeaponPistolFireMontage();
 }
 
 void APTPSWeaponPistol::Reload()
 {
 	Super::Reload();
+	
+	AnimInstance->PlayWeaponPistolReloadMontage();
 }

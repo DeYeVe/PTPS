@@ -49,6 +49,12 @@ class APTPSCharacter : public ACharacter
 	UInputAction* FireAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ReloadAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ZoomAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -81,6 +87,12 @@ protected:
 
 	void Fire();
 	
+	void Reload();
+	void ReloadEnd();
+	
+	void SprintStart();
+	void SprintEnd();
+	
 	void Roll();
 	void RollEnd();
 
@@ -112,12 +124,18 @@ private:
 	FVector ZoomedCameraLocation;
 	float DefaultCameraBoomLength;
 	float ZoomedCameraBoomLength;
+	
 	bool bIsZooming;
-	bool bIsRolling;
+	bool bCanAct;
 	bool bCanFire;
+	bool bIsSprinting;
 
 public:
 	bool GetIsZooming() const { return bIsZooming; };
+	
+	UFUNCTION(BlueprintCallable)
+	bool GetIsSprinting() { return bIsSprinting; };
+
 
 private:	
 	FVector2D MovementVector;

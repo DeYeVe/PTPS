@@ -3,6 +3,7 @@
 
 #include "PTPSWeapon.h"
 
+#include "PTPSAnimInstance.h"
 #include "PTPSCharacter.h"
 
 // Sets default values
@@ -15,23 +16,33 @@ APTPSWeapon::APTPSWeapon()
 	MeshWeapon->SetupAttachment(RootComponent);
 
 	bCanFire = true;
-	bCanReload = true;
+	bCanReload = false;
 }
 
 // Called when the game starts or when spawned
 void APTPSWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (MaxAmmo == CurrentAmmo)
-		bCanReload = false;
 	
+	AnimInstance = Cast<UPTPSAnimInstance>(MeshWeapon->GetAnimInstance());
 }
 
 // Called every frame
 void APTPSWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (CurrentAmmo == 0)
+		bCanFire = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("RemainedAmmo = %d"), RemainedAmmo);
+	UE_LOG(LogTemp, Warning, TEXT("CurrentAmmo = %d"), CurrentAmmo);
+	UE_LOG(LogTemp, Warning, TEXT("MaxAmmo = %d"), MaxAmmo);
+	
+	if (RemainedAmmo > 0 && CurrentAmmo < MaxAmmo)
+		bCanReload = true;
+	else
+		bCanReload = false;
 
 }
 
@@ -42,27 +53,18 @@ void APTPSWeapon::AttachWeapon(APTPSCharacter* TargetCharacter)
 
 void APTPSWeapon::Fire()
 {
-
 	CurrentAmmo--;
-		//animinst->playanim
-		
-	if (CurrentAmmo == 0)
-		bCanFire = false;
-
-	if (RemainedAmmo != 0)
-		bCanReload = true;
 }
 
 void APTPSWeapon::Reload()
 {
-	if (RemainedAmmo > 0)
-	{
-		int32 RequiredAmmo = MaxAmmo - CurrentAmmo;
-		int32 ReloadedAmmo = (RemainedAmmo > RequiredAmmo) ? RequiredAmmo : RemainedAmmo;
-		CurrentAmmo += ReloadedAmmo;
-		RemainedAmmo -= ReloadedAmmo;		
-		
-		bCanReload = false;		
-	}
+}
+
+void APTPSWeapon::ReloadEnd()
+{
+	int32 RequiredAmmo = MaxAmmo - CurrentAmmo;
+    int32 ReloadedAmmo = (RemainedAmmo > RequiredAmmo) ? RequiredAmmo : RemainedAmmo;
+    CurrentAmmo += ReloadedAmmo;
+    RemainedAmmo -= ReloadedAmmo;	
 }
 

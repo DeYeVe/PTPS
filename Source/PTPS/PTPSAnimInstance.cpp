@@ -22,9 +22,22 @@ UPTPSAnimInstance::UPTPSAnimInstance()
 		}
 	};
 	
+	// Player
 	InitMontage(PlayerPistolFireMontage, TEXT("AnimMontage'/Game/Player/Animation/AM_PistolFire.AM_PistolFire'"));
 	InitMontage(PlayerRifleFireMontage, TEXT("AnimMontage'/Game/Player/Animation/AM_RifleFire.AM_RifleFire'"));
 	InitMontage(PlayerRollMontage, TEXT("AnimMontage'/Game/Player/Animation/AM_Roll.AM_Roll'"));
+
+	InitMontage(PlayerRifleReloadMontage, TEXT("AnimMontage'/Game/Player/Animation/AM_RifleReload.AM_RifleReload'"));
+
+	
+	// Weapons
+	InitMontage(WeaponPistolFireMontage, TEXT("AnimMontage'/Game/Weapons/Animation/AM_PistolFire.AM_PistolFire'"));
+	InitMontage(WeaponRifleFireMontage, TEXT("AnimMontage'/Game/Weapons/Animation/AM_RifleFire.AM_RifleFire'"));
+	
+	InitMontage(WeaponPistolReloadMontage, TEXT("AnimMontage'/Game/Weapons/Animation/AM_PistolReload.AM_PistolReload'"));
+	InitMontage(WeaponRifleReloadMontage, TEXT("AnimMontage'/Game/Weapons/Animation/AM_RifleReload.AM_RifleReload'"));
+	
+
 }
 
 void UPTPSAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -40,6 +53,7 @@ void UPTPSAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			Speed = Character->GetVelocity().Size();
 			bIsFalling = Character->GetMovementComponent()->IsFalling();
 			bIsZooming = Character->GetIsZooming();
+			bIsSprinting = Character->GetIsSprinting();
 			MovementVector = Character->GetMovementVector();
 
 			// aim offset
@@ -66,6 +80,36 @@ void UPTPSAnimInstance::PlayPlayerPistolFireMontage()
 void UPTPSAnimInstance::PlayPlayerRifleFireMontage()
 {
 	Montage_Play(PlayerRifleFireMontage);
+}
+
+void UPTPSAnimInstance::PlayPlayerPistolReloadMontage()
+{
+	Montage_Play(PlayerPistolReloadMontage);
+}
+
+void UPTPSAnimInstance::PlayPlayerRifleReloadMontage()
+{
+	Montage_Play(PlayerRifleReloadMontage);
+}
+
+void UPTPSAnimInstance::PlayWeaponPistolFireMontage()
+{
+	Montage_Play(WeaponRifleFireMontage);
+}
+
+void UPTPSAnimInstance::PlayWeaponRifleFireMontage()
+{
+	Montage_Play(WeaponRifleFireMontage);
+}
+
+void UPTPSAnimInstance::PlayWeaponPistolReloadMontage()
+{
+	Montage_Play(WeaponRifleReloadMontage);
+}
+
+void UPTPSAnimInstance::PlayWeaponRifleReloadMontage()
+{
+	Montage_Play(WeaponRifleReloadMontage);
 }
 
 void UPTPSAnimInstance::AnimNotify_CanFire() const

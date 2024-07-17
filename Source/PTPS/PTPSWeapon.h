@@ -66,7 +66,7 @@ public:
 	bool GetCanFire() { return bCanFire; };
 	
 	UFUNCTION(BlueprintCallable)
-	bool GetCanReload() { return bCanReload; };
+	bool GetCanReload() { return bCanReload; }
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void AttachWeapon(APTPSCharacter* TargetCharacter);
@@ -76,4 +76,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void Reload();
+	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void ReloadEnd();
 };

@@ -22,11 +22,27 @@ class PTPS_API UPTPSAnimInstance : public UAnimInstance
 	
 	
 public:
+	// Player
 	void PlayPlayerRollMontage();
+	
 	void PlayPlayerPistolFireMontage();
 	void PlayPlayerRifleFireMontage();
+	
+	void PlayPlayerPistolReloadMontage();
+	void PlayPlayerRifleReloadMontage();
+
+	
+	// Weapon
+	void PlayWeaponPistolFireMontage();
+	void PlayWeaponRifleFireMontage();
+	
+	void PlayWeaponPistolReloadMontage();
+	void PlayWeaponRifleReloadMontage();
+
+	
 
 public:
+	// Player
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Player, Meta=(AllowPrivateAccess=true)) 
 	UAnimMontage* PlayerRollMontage;
 		
@@ -35,6 +51,27 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Player, Meta=(AllowPrivateAccess=true)) 
 	UAnimMontage* PlayerRifleFireMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Player, Meta=(AllowPrivateAccess=true)) 
+	UAnimMontage* PlayerPistolReloadMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Player, Meta=(AllowPrivateAccess=true)) 
+	UAnimMontage* PlayerRifleReloadMontage;
+
+	
+	// Weapon
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Weapon, Meta=(AllowPrivateAccess=true)) 
+	UAnimMontage* WeaponPistolFireMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Weapon, Meta=(AllowPrivateAccess=true)) 
+	UAnimMontage* WeaponRifleFireMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Weapon, Meta=(AllowPrivateAccess=true)) 
+	UAnimMontage* WeaponPistolReloadMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Weapon, Meta=(AllowPrivateAccess=true)) 
+	UAnimMontage* WeaponRifleReloadMontage;
+
 		
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
@@ -56,12 +93,14 @@ public:
 	bool bIsZooming;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	bool bIsDashing;
+	bool bIsSprinting;
+	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	FGameplayTag WeaponTypeTag;
 
 	FDelegate CanFire;
+	
 
 private:
 	UFUNCTION()
